@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core">
+<h:body>
+	<ui:composition template="../../resources/template/template-administrador.xhtml">
+		<ui:define name="mensagem">
+			<ui:include src="../../componentes/mensagem.xhtml" />
+		</ui:define>
+		<ui:define name="modal-confirmacao">
+			<ui:include src="../../componentes/dialog-confirmacao.xhtml" />
+		</ui:define>
+	
+	<ui:define name="conteudo">	
+		<!-- TITULO -->
+	<div class="row">
+		<div class="col-md-12">
+			<h1 class="page-header">Cálculo de Diluição</h1>
+
+		</div>
+	</div>
+	<!-- FIM TITULO -->
+
+	<!-- BOTAO CADASTRAR -->
+	<div class="row container-fluid">
+		<div class="col-md-12">
+			<ol class="breadcrumb">
+				<h:form id="frmCadastrar">
+					<p:commandButton 
+						value="Efetuar Cálculo" update=":frmModalSalvar" actionListener="#{diluicaoMB.criarNovoObjeto()}"
+						onclick="PF('dlgCadastrar').show(); PF('dlgCadastrar').content.scrollTop('0')"
+						title="Cadastrar" />
+						
+						<p:commandButton 
+						value="Emitir Relatorio" actionListener="#{diluicaoMB.imprimirRelatorioDiluicao()}"
+						ajax="false"
+						title="Emitir Relatorio"/>
+						
+						<p:commandButton 
+						value="Consultar Procedimento" update=":frmModalProcedimento"
+						onclick="PF('dlgProcedimento').show(); PF('dlgProcedimento').content.scrollTop('0')"
+						title="Procedimento" />	
+				</h:form>
+			</ol>
+		</div>
+	</div>
+	<!-- FIM DO BOTAO CADASTRAR -->
+	<!-- TABELA-->
+	<div class="col-md-12">
+		<h:form id="frmTabela">
+			<p:dataTable id="tabela" value="#{diluicaoMB.listaDiluicao}"
+				resizableColumns="true" reflow="true" var="list" rows="10"
+				paginator="true" paginatorPosition="bottom"
+				emptyMessage="Nenhum CÁLCULO cadastrado"
+				rowsPerPageTemplate="5,10,15,30,50,100">
+				
+				<p:column headerText="Descrição" filterBy="#{list.descricao}"
+					sortBy="#{list.descricao}" filterMatchMode="contains">
+					<h:outputText value="#{list.descricao}" />
+				</p:column>
+				
+								
+				<p:column headerText="Concentração Sol. Inicial (mol/L)" filterBy="#{list.concentracaoSolucaoInicial}"
+					sortBy="#{list.concentracaoSolucaoInicial}" filterMatchMode="contains">
+					<h:outputText style="float:right" value="#{list.concentracaoSolucaoInicial}" >
+					<f:convertNumber pattern="#0.0000" minFractionDigits="4" />
+					</h:outputText>
+				</p:column>
+				
+				<p:column headerText="Concentração Sol. Pretendida (mol/L)" filterBy="#{list.concentracaoSolucaoPretendida}"
+					sortBy="#{list.concentracaoSolucaoPretendida}" filterMatchMode="contains">
+					<h:outputText style="float:right" value="#{list.concentracaoSolucaoPretendida}"  >
+					<f:convertNumber pattern="#0.0000" minFractionDigits="4" />
+					</h:outputText>
+				</p:column>	
+				
+				<p:column headerText="Vol. Solução Pretendida (L)" filterBy="#{list.volumeSolucaoPretendida}"
+					sortBy="#{list.volumeSolucaoPretendida}" filterMatchMode="contains">
+					<h:outputText style="float:right" value="#{list.volumeSolucaoPretendida}"  >
+					<f:convertNumber pattern="#0.0000" minFractionDigits="4" />
+					</h:outputText>
+				</p:column>
+				
+				
+				<p:column headerText="Resultado (L)" filterBy="#{list.resultado}"
+					sortBy="#{list.resultado}" filterMatchMode="contains">
+					<h:outputText style="float:right" value="#{list.resultado}" >
+					<f:convertNumber pattern="#0.0000" minFractionDigits="4" />
+					</h:outputText>
+				</p:column>
+				
+				
+				<p:column headerText="Alterar" style="width:68px">
+					<p:commandButton disabled="false" alt="Alterar" icon="ui-icon-pencil"
+						update=":frmModalSalvar" title="Alterar"
+						styleClass="btn btn-block" oncomplete="PF('dlgCadastrar').show();"
+						actionListener="#{diluicaoMB.preencherListaDiluicao(list)}">
+
+					</p:commandButton>
+				</p:column>
+				
+				<p:column headerText="Enviar Resultado" style="width:68px">						
+						<p:commandButton disabled="false" alt="Email" icon="fa fa-envelope"
+						update=":frmModalEmail" title="Enviar email" styleClass="btn btn-block" 
+						oncomplete="PF('dlgEmail').show(); PF('dlgEmail').content.scrollTop('0')"
+						actionListener="#{diluicaoMB.buscandoResultado(list)}">	
+
+				</p:commandButton>
+				</p:column>
+				
+				<!-- <p:column headerText="Excluir" style="width:68px">
+					<p:commandButton disabled="true"
+						actionListener="#{diluicaoMB.inativarDiluicao(list)}"
+						icon="ui-icon-trash" title="Excluir" styleClass="btn btn-block"
+						update=":frmTabela :dlgInformacao" alt="Excluir">
+						<p:confirm header="Confirmação" message="Deseja excluir?" />
+					</p:commandButton>
+				</p:column> -->
+				
+				
+				
+			</p:dataTable>
+		</h:form>
+
+	</div>
+	<!--FIM DA TABELA-->
+
+	<!-- DIALOG SALVAR -->
+	<p:dialog header="Cálculo Diluição" widgetVar="dlgCadastrar"
+		modal="true" responsive="true" width="70%" id="dlgCadastrar"
+		closable="true" closeOnEscape="true" resizable="true"
+		draggable="false">
+		<h:form id="frmModalSalvar">
+			<div class="ui-fluid">
+				<div class="col-md-12">
+					<label>Descrição: </label>
+					<p:inputText title="Descrição" value="#{diluicaoMB.diluicao.descricao}" 
+					required="true" requiredMessage="Campo Descrição vazio"/>
+				</div>
+				
+				<div class="col-md-12">
+					<label>Concentração Sol. Inicial (mol/L): </label>
+					<p:inputText title="ConcentracaoSolInicial" value="#{diluicaoMB.diluicao.concentracaoSolucaoInicial}" 
+					required="true" requiredMessage="Campo Concentração Sol. Inicial vazio"/>
+				</div>
+				
+				<div class="col-md-12">
+					<label>Concentração Sol. Pretendida (mol/L): </label>
+					<p:inputText title="ConcentraçãoSolPretendida" value="#{diluicaoMB.diluicao.concentracaoSolucaoPretendida}" 
+					required="true" requiredMessage="Campo Concentração Sol. Pretendida vazio"/>
+				</div>
+				
+				<div class="col-md-12">
+					<label>Vol. Solução Pretendida (L): </label>
+					<p:inputText title="VolumeSolInicial" value="#{diluicaoMB.diluicao.volumeSolucaoPretendida}" 
+					required="true" requiredMessage="Campo Volume Solução Pretendida vazio"/>
+				</div>
+				
+				
+					
+			</div>
+			<div class="modal-footer">
+				<p:commandButton value="Salvar e Calcular" actionListener="#{diluicaoMB.salvar()}" styleClass="ui-priority-primary"
+					 update=":dlgInformacao :frmTabela" />
+
+				<p:commandButton value="Cancelar"
+					onclick="PF('dlgCadastrar').hide();" alt="Cancelar" />
+			</div>
+		</h:form>
+	</p:dialog>
+	<!-- FIM DO DIALOG SALVAR -->
+	
+	<!-- DIALOG PROCEDIMENTO -->
+	<p:dialog header="Procedimento para a diluição de soluções com concentração molar:" widgetVar="dlgProcedimento"
+		modal="true" responsive="true" width="60%" id="dlgProcedimento"
+		closable="true" closeOnEscape="true" resizable="true"
+		draggable="false">
+		<h:form id="frmModalProcedimento">
+			<div class="ui-fluid">
+			
+			<p>1 – Meça (com uma pipeta graduada ou com uma proveta) o volume calculado através do sistema XXX.</p>
+			<p>2 – Transfira o volume pipetado da solução 1 para um balão volumétrico de volume igual ao volume final da solução 2.</p>
+			<p>3 – Complete o volume do balão volumétrico com o solvente;</p>
+			<p>4 – Agite vagarosamente o balão volumétrico;</p>
+			<p>5 – Solução Pronta.</p>
+
+				
+					
+			<p:commandButton value="Fechar"
+					onclick="PF('dlgProcedimento').hide();" alt="Cancelar" />
+				
+			</div>
+		</h:form>
+	</p:dialog>
+	<!-- FIM DO DIALOG PROCEDIMENTO -->
+	
+	<!-- DIALOG EMAIL -->
+	<p:dialog header="Envio de resultado via email" widgetVar="dlgEmail"
+		modal="true" responsive="true" width="60%" id="dlgEmail"
+		closable="true" closeOnEscape="true" resizable="true"
+		draggable="false">
+		<h:form id="frmModalEmail">
+			<div class="ui-fluid">
+			
+				
+				<div class="col-md-12">
+						<label>Selecione o Email: *</label>
+						<p:selectOneMenu converter="#{usuarioConverter}" title="Usuario"
+							value="#{diluicaoMB.usuario}">
+							<f:selectItems value="#{usuarioMB.listaUsuario}" var="usuario"
+								itemLabel="#{usuario.email}" itemValue="#{usuario}" />
+						</p:selectOneMenu>
+				</div>
+				
+						
+				
+			</div>
+			<div class="modal-footer">
+				<p:commandButton 
+						value="Enviar Email" actionListener="#{diluicaoMB.enviarEmail()}"
+						oncomplete="PF('dlgEmail').show();"
+						title="Enviar"/>
+
+			</div>
+		</h:form>
+	</p:dialog>
+	<!-- FIM DO DIALOG EMAIL -->
+		</ui:define>
+		
+	</ui:composition>
+</h:body>
+</html>
+
